@@ -38,7 +38,7 @@ const stats = [
 export default function DiagnosticCTA() {
   return (
     <SectionWrapper id="diagnostico" bg="dark">
-      <SectionLabel number="//02" text="IMPACT BRAND SCORE" />
+      <SectionLabel number="//02" text="REGEN BRAND SCORE" />
 
       <TextReveal>
         <h2 className="text-[clamp(2.5rem,6vw,80px)] font-normal text-cream leading-[1.05] tracking-[-0.02em]">

@@ -121,7 +121,7 @@ export default function Problem() {
         {metrics.map((metric) => (
           <StaggerItem key={metric.value}>
             <div className="border-l-2 border-signal pl-5">
-              <span className="text-[clamp(2rem,5vw,3.5rem)] font-bold text-signal leading-none tracking-[-0.02em]">
+              <span className="text-[36px] font-bold text-signal leading-none tracking-[-0.02em]">
                 {metric.value}
               </span>
               <p className="mt-3 text-sm text-mute leading-relaxed">

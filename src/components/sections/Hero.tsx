@@ -21,8 +21,12 @@ const HERO_IMAGES = [
   "/images/hero/brands-people-0adHvNJu-Zo-unsplash.jpg",
 ];
 
-// Staggered dramatic rhythm: rapid burst then hold
-const INTERVALS = [200, 300, 500, 1000, 200, 300, 500, 1000, 200, 300];
+// Random intervals: 300ms, 500ms, or 1000ms
+const INTERVALS = [300, 500, 1000];
+
+function randomInterval() {
+  return INTERVALS[Math.floor(Math.random() * INTERVALS.length)];
+}
 
 export default function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,10 +36,7 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    let idx = currentIndex % INTERVALS.length;
-    const timer = setTimeout(() => {
-      advance();
-    }, INTERVALS[idx]);
+    const timer = setTimeout(advance, randomInterval());
     return () => clearTimeout(timer);
   }, [currentIndex, advance]);
 
@@ -77,7 +78,7 @@ export default function Hero() {
       </div>
 
       {/* Content */}
-      <div className="relative z-20 mx-auto w-full max-w-7xl px-6 md:px-12 flex-1 flex flex-col justify-center">
+      <div className="relative z-20 mx-auto w-full max-w-7xl px-6 md:px-12 flex-1 flex flex-col justify-center pt-20 md:pt-0">
         {/* Decorative corner text */}
         <div className="absolute top-32 right-8 hidden lg:block">
           <span className="font-mono text-[0.625rem] tracking-[0.3em] text-cream/20 rotate-90 block origin-top-right">

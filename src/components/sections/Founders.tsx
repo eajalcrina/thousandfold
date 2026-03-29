@@ -1,47 +1,53 @@
 "use client";
 
 import Image from "next/image";
-import SectionWrapper from "../ui/SectionWrapper";
 import SectionLabel from "../ui/SectionLabel";
 import TextReveal from "@/components/motion/TextReveal";
 import FadeIn from "@/components/motion/FadeIn";
 
 export default function Founders() {
   return (
-    <SectionWrapper id="nosotros" bg="dark">
-      <SectionLabel number="//06" text="QUIÉNES SOMOS" />
+    <section id="nosotros" className="relative overflow-hidden">
+      {/* Background image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/founders/foto-editorial.jpg"
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
+        {/* Dark overlay + blur for readability */}
+        <div
+          className="absolute inset-0 z-10 backdrop-blur-sm"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(28,26,25,0.85) 0%, rgba(28,26,25,0.80) 50%, rgba(28,26,25,0.90) 100%)",
+          }}
+        />
+      </div>
 
-      <TextReveal>
-        <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-normal text-cream leading-[1.1]">
-          No somos teóricos.
-        </h2>
-      </TextReveal>
-      <TextReveal>
-        <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-normal text-cream leading-[1.1]">
-          Somos constructores.
-        </h2>
-      </TextReveal>
+      {/* Content */}
+      <div className="relative z-20 mx-auto w-full max-w-7xl px-6 md:px-12 py-24 md:py-40">
+        <SectionLabel number="//06" text="QUIÉNES SOMOS" />
 
-      <div className="mt-16 grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-20 items-start">
-        {/* Photo */}
-        <FadeIn direction="left" className="lg:col-span-3">
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src="/images/founders/foto-editorial.jpg"
-              alt="Eddie Ajalcriña y Lorenzo Ortiz — ThousandFold"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 60vw"
-              priority
-            />
-          </div>
-        </FadeIn>
+        <TextReveal>
+          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-normal text-cream leading-[1.1]">
+            No somos teóricos.
+          </h2>
+        </TextReveal>
+        <TextReveal>
+          <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-normal text-cream leading-[1.1]">
+            Somos constructores.
+          </h2>
+        </TextReveal>
 
-        {/* Text block */}
-        <FadeIn direction="right" delay={0.2} className="lg:col-span-2">
-          <div className="text-base leading-relaxed text-mute">
+        {/* Text block — left aligned, max width for readability */}
+        <FadeIn delay={0.2} className="mt-12 md:mt-16">
+          <div className="text-base leading-relaxed text-cream/70 max-w-2xl">
             <p>
-              <span className="text-signal">ThousandFold</span> nació de años construyendo marcas regenerativas desde
+              <span className="text-signal font-medium">ThousandFold</span> nació de años construyendo marcas regenerativas desde
               adentro del ecosistema latinoamericano — no estudiando el fenómeno,
               sino siendo parte de él.
             </p>
@@ -79,28 +85,23 @@ export default function Founders() {
             </p>
           </div>
         </FadeIn>
-      </div>
 
-      {/* Quote */}
-      <div className="mt-20">
-        <FadeIn>
-          <div className="text-center max-w-2xl mx-auto">
-            <span className="text-4xl md:text-6xl leading-none text-signal">&ldquo;</span>
-            <p className="text-base sm:text-lg md:text-xl italic text-cream max-w-2xl mx-auto text-center">
-              No hacemos marcas verdes. Hacemos marcas verdaderas.
+        {/* Quote */}
+        <FadeIn delay={0.3} className="mt-16 md:mt-20">
+          <div className="max-w-2xl">
+            <div className="border-l-2 border-signal pl-6">
+              <p className="text-base sm:text-lg md:text-xl italic text-cream">
+                &ldquo;No hacemos marcas verdes. Hacemos marcas verdaderas.&rdquo;
+              </p>
+            </div>
+            <p className="mt-6 text-sm text-cream/50 max-w-lg">
+              Construido con y validado por una red de especialistas en branding,
+              diseño, ecología, biocomercio y modelos de negocio a lo largo de América
+              Latina.
             </p>
-            <span className="text-4xl md:text-6xl leading-none text-signal">&rdquo;</span>
           </div>
         </FadeIn>
-
-        <FadeIn>
-          <p className="mt-8 text-center text-sm text-mute max-w-lg mx-auto">
-            Construido con y validado por una red de especialistas en branding,
-            diseño, ecología, biocomercio y modelos de negocio a lo largo de América
-            Latina.
-          </p>
-        </FadeIn>
       </div>
-    </SectionWrapper>
+    </section>
   );
 }
