@@ -37,7 +37,7 @@ export default function Book() {
         </TextReveal>
         <TextReveal delay={0.1}>
           <p className="mt-2 text-[clamp(1.25rem,2.5vw,1.75rem)] italic text-mute font-normal">
-            Cómo crear marcas regenerativas en América Latina
+            Cómo construir marcas regenerativas en América Latina
           </p>
         </TextReveal>
       </div>

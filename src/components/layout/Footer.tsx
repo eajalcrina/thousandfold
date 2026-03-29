@@ -99,10 +99,10 @@ export default function Footer() {
             <ul className="flex flex-col gap-3">
               <li>
                 <a
-                  href="mailto:hello@thousandfold.la"
+                  href="mailto:thousandfold@redesignlab.org"
                   className="font-mono text-[11px] tracking-wide text-mute hover:text-cream transition-colors duration-200"
                 >
-                  hello@thousandfold.la
+                  thousandfold@redesignlab.org
                 </a>
               </li>
               {SOCIAL_LINKS.map((link) => (

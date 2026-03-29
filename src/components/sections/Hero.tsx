@@ -21,12 +21,7 @@ const HERO_IMAGES = [
   "/images/hero/brands-people-0adHvNJu-Zo-unsplash.jpg",
 ];
 
-// Random intervals: 300ms, 500ms, or 1000ms
-const INTERVALS = [300, 500, 1000];
-
-function randomInterval() {
-  return INTERVALS[Math.floor(Math.random() * INTERVALS.length)];
-}
+const INTERVAL = 500;
 
 export default function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,7 +31,7 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(advance, randomInterval());
+    const timer = setTimeout(advance, INTERVAL);
     return () => clearTimeout(timer);
   }, [currentIndex, advance]);
 
