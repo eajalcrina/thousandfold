@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { label: "Diagnóstico", href: "#diagnostico" },
+  { label: "Diagnóstico", href: "/diagnostico" },
   { label: "Libro", href: "#libro" },
   { label: "Framework", href: "#framework" },
   { label: "Nosotros", href: "#nosotros" },
@@ -12,12 +13,13 @@ const NAV_LINKS = [
 
 const CTA_LINK = { label: "Contacto", href: "#contacto" };
 
-const SECTION_IDS = ["diagnostico", "libro", "framework", "nosotros", "contacto"];
+const SECTION_IDS = ["libro", "framework", "nosotros", "contacto"];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   // Track scroll position for background change
   useEffect(() => {
@@ -71,11 +73,14 @@ export default function Navbar() {
 
   const handleLinkClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      if (!href.startsWith("#")) {
+        // Real route: let the browser/Next navigate normally
+        setMobileOpen(false);
+        return;
+      }
       e.preventDefault();
       const target = document.querySelector(href);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth" });
-      }
+      if (target) target.scrollIntoView({ behavior: "smooth" });
       setMobileOpen(false);
     },
     []
@@ -103,7 +108,9 @@ export default function Navbar() {
           {/* Desktop links */}
           <ul className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => {
-              const isActive = activeSection === link.href.slice(1);
+              const isActive = link.href.startsWith("/")
+  ? pathname === link.href
+  : activeSection === link.href.slice(1);
               return (
                 <li key={link.href}>
                   <a
@@ -201,7 +208,9 @@ export default function Navbar() {
             {/* Centered links */}
             <div className="flex-1 flex flex-col items-center justify-center gap-8">
               {[...NAV_LINKS, CTA_LINK].map((link, i) => {
-                const isActive = activeSection === link.href.slice(1);
+                const isActive = link.href.startsWith("/")
+  ? pathname === link.href
+  : activeSection === link.href.slice(1);
                 const isCta = link.href === CTA_LINK.href;
                 return (
                   <motion.div

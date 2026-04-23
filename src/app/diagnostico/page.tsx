@@ -1,12 +1,12 @@
-import DiagnosticWizard from "@/components/diagnostic/DiagnosticWizard";
+import RizomaDiagnostic from "@/components/diagnostic/RizomaDiagnostic";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Impact Brand Score — ThousandFold",
+  title: "Diagnóstico RIZOMA — ThousandFold",
   description:
-    "Diagnóstico gratuito de madurez de marca regenerativa. 9 preguntas. 3 minutos. Resultado inmediato.",
+    "Descubre el arquetipo de tu marca regenerativa, tu nivel en el espectro RIZOMA y las brechas prioritarias a resolver. 24 preguntas, 8 minutos, gratuito.",
 };
 
 export default function DiagnosticoPage() {
-  return <DiagnosticWizard />;
+  return <RizomaDiagnostic />;
 }
