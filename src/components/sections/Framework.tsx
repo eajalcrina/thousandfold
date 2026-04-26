@@ -131,7 +131,7 @@ export default function Framework() {
       {/* ── CTA ── */}
       <div className="mt-8">
         <a href="#libro" className="text-signal text-sm hover:underline">
-          El libro desarrolla los 5 momentos en profundidad. →
+          Descarga el documento RIZOMA con las siete capas en detalle. →
         </a>
       </div>
     </SectionWrapper>

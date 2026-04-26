@@ -2,7 +2,7 @@
 
 const NAVEGACION_LINKS = [
   { label: "Diagnóstico", href: "#diagnostico" },
-  { label: "Libro", href: "#libro" },
+  { label: "Documento RIZOMA", href: "#libro" },
   { label: "Framework", href: "#framework" },
   { label: "Herramientas", href: "#herramientas" },
   { label: "Nosotros", href: "#nosotros" },
@@ -10,7 +10,7 @@ const NAVEGACION_LINKS = [
 
 const RECURSOS_LINKS = [
   { label: "Diagnóstico gratuito", href: "#diagnostico" },
-  { label: "Pre-ordenar libro", href: "#libro" },
+  { label: "Documento RIZOMA · PDF", href: "#libro" },
 ];
 
 const SOCIAL_LINKS = [

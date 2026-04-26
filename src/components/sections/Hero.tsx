@@ -114,7 +114,7 @@ export default function Hero() {
                 Diagnostica tu marca
               </Button>
               <Button href="#libro" variant="ghost">
-                Ver el libro
+                Descargar RIZOMA
               </Button>
             </div>
           </FadeIn>
