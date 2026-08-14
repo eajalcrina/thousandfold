@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseServer } from "@/lib/supabase-server";
+import { sendLeadNotification } from "@/lib/brevo";
+import { appendSheetRow } from "@/lib/google-sheets";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -10,6 +11,8 @@ const REQUIRED_FIELDS = [
   "organization",
   "country",
 ] as const;
+
+const SHEET_TAB = process.env.GOOGLE_SHEETS_TAB_DOWNLOADS ?? "RIZOMA Downloads";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,32 +31,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email inválido" }, { status: 400 });
     }
 
-    const supabase = getSupabaseServer();
-    if (supabase) {
-      const { error } = await supabase.from("rizoma_downloads").insert({
-        first_name: body.firstName.trim(),
-        last_name: body.lastName.trim(),
-        email: body.email.trim().toLowerCase(),
-        organization: body.organization.trim(),
-        country: body.country.trim(),
-        document_version: "1.1",
-      });
-      if (error) console.error("[rizoma-download] supabase insert error:", error);
-    } else {
-      console.warn("[rizoma-download] Supabase not configured — submission not persisted.");
-      console.log(
-        "[rizoma-download submission]",
-        JSON.stringify(
-          {
-            firstName: body.firstName,
-            lastName: body.lastName,
-            email: body.email,
-            organization: body.organization,
-            country: body.country,
-          },
-          null,
-          2
-        )
+    const lead = {
+      firstName: body.firstName.trim(),
+      lastName: body.lastName.trim(),
+      email: body.email.trim().toLowerCase(),
+      organization: body.organization.trim(),
+      country: body.country.trim(),
+    };
+
+    // Notify the team by email (Brevo) and log the lead to Google Sheets in
+    // parallel. Each is independent — one failing doesn't block the other,
+    // so a single outage doesn't mean the contact is lost.
+    const [brevoResult, sheetsResult] = await Promise.allSettled([
+      sendLeadNotification(
+        `Nueva descarga · RIZOMA v1.1 — ${lead.organization}`,
+        [
+          ["Nombre", `${lead.firstName} ${lead.lastName}`],
+          ["Email", lead.email],
+          ["Organización", lead.organization],
+          ["País", lead.country],
+          ["Versión documento", "1.1"],
+        ]
+      ),
+      appendSheetRow(SHEET_TAB, [
+        new Date().toISOString(),
+        lead.firstName,
+        lead.lastName,
+        lead.email,
+        lead.organization,
+        lead.country,
+        "1.1",
+      ]),
+    ]);
+
+    if (brevoResult.status === "rejected") {
+      console.error("[rizoma-download] Brevo error:", brevoResult.reason);
+    }
+    if (sheetsResult.status === "rejected") {
+      console.error("[rizoma-download] Google Sheets error:", sheetsResult.reason);
+    }
+
+    // Only fail the request (and surface an error to the visitor) if BOTH
+    // destinations failed — that's the one case where the contact would
+    // otherwise be silently lost.
+    if (brevoResult.status === "rejected" && sheetsResult.status === "rejected") {
+      return NextResponse.json(
+        {
+          error:
+            "No pudimos registrar tu solicitud. Intenta de nuevo en unos minutos.",
+        },
+        { status: 502 }
       );
     }
 

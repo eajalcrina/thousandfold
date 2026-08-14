@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import { sendTransactionalEmail } from "./brevo";
 
 interface SendRizomaReportInput {
   to: string;
@@ -13,22 +13,19 @@ interface SendRizomaReportInput {
 }
 
 const CALENDLY_URL = 'https://calendar.app.google/9nv4ou6CEBwucfJp8';
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'regenbrands@redesignlab.org';
 
+/**
+ * Sends the user-facing RIZOMA diagnostic report email. Was Resend;
+ * now goes through the same Brevo account already used for the internal
+ * lead notification (see lib/brevo.ts) — one less provider to maintain.
+ */
 export async function sendRizomaReport(input: SendRizomaReportInput): Promise<void> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    console.warn('[rizoma] RESEND_API_KEY missing — email not sent');
-    return;
-  }
-  const resend = new Resend(key);
   const subject = `El perfil RIZOMA de ${input.brandName}: ${input.arcName}`;
-  const html = renderEmail(input);
-  await resend.emails.send({
-    from: `ThousandFold Studio <${FROM}>`,
+  await sendTransactionalEmail({
     to: input.to,
     subject,
-    html,
+    html: renderEmail(input),
+    fromName: 'ThousandFold Studio',
   });
 }
 

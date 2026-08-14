@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseServer } from "@/lib/supabase-server";
-import { sendRizomaReport } from "@/lib/resend";
+import { sendLeadNotification } from "@/lib/brevo";
+import { appendSheetRow } from "@/lib/google-sheets";
+import { sendRizomaReport } from "@/lib/rizoma-report-email";
 import { ARCHETYPES, BRECHAS_META, LAYER_META, SERVICES_CATALOG, type Layer } from "@/lib/rizoma-data";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const SHEET_TAB = process.env.GOOGLE_SHEETS_TAB_DIAGNOSTICS ?? "RIZOMA Diagnostics";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,37 +33,66 @@ export async function POST(request: NextRequest) {
     const arcIndex: number = result.arcIndex;
     const arcName = ARCHETYPES[arcIndex]?.name ?? "Desconocido";
     const service = SERVICES_CATALOG.find(s => s.id === result.recommendedServiceId);
+    const email = user.email.trim().toLowerCase();
 
-    // 1) Persist to Supabase if configured
-    const supabase = getSupabaseServer();
-    if (supabase) {
-      const { error } = await supabase.from("rizoma_diagnostics").insert({
-        arc_index: arcIndex,
-        arc_name: arcName,
-        level: result.level,
-        total_score: result.totalScore,
-        layer_scores: result.layerScores,
-        top_brechas: result.topBrechas,
-        recommended_service: result.recommendedServiceId,
-        answers,
-        scale_values: scaleValues,
-        first_name: user.firstName,
-        last_name: user.lastName,
-        email: user.email,
-        phone_country_code: user.phoneCountryCode,
-        phone: user.phone,
-        brand_country: user.brandCountry,
-        brand_name: user.brandName,
-        brand_offering: user.brandOffering,
-        brand_link: user.brandLink || null,
-        revenue_range: user.revenueRange,
-        market_scope: user.marketScope,
-      });
-      if (error) console.error("[rizoma] supabase insert error:", error);
-    } else {
-      console.warn("[rizoma] Supabase not configured — submission not persisted.");
-      console.log("[rizoma submission]", JSON.stringify({ result, user }, null, 2));
+    // 1) Notify the team by email (Brevo) and log the lead to Google Sheets
+    // in parallel. Each is independent — one failing doesn't block the other.
+    const [brevoResult, sheetsResult] = await Promise.allSettled([
+      sendLeadNotification(
+        `Nuevo diagnóstico RIZOMA · ${arcName} — ${user.brandName}`,
+        [
+          ["Nombre", `${user.firstName} ${user.lastName}`],
+          ["Email", email],
+          ["Teléfono", `${user.phoneCountryCode}${user.phone}`],
+          ["Marca", user.brandName],
+          ["País de la marca", user.brandCountry],
+          ["Qué ofrece", user.brandOffering],
+          ["Link de la marca", user.brandLink || null],
+          ["Rango de ingresos", user.revenueRange],
+          ["Alcance de mercado", user.marketScope],
+          ["Arquetipo RIZOMA", arcName],
+          ["Nivel", result.level],
+          ["Score total", result.totalScore],
+          [
+            "Servicio recomendado",
+            service?.name ?? result.recommendedServiceId ?? "",
+          ],
+        ]
+      ),
+      appendSheetRow(SHEET_TAB, [
+        new Date().toISOString(),
+        user.firstName,
+        user.lastName,
+        email,
+        `${user.phoneCountryCode}${user.phone}`,
+        user.brandName,
+        user.brandCountry,
+        user.brandOffering,
+        user.brandLink || "",
+        user.revenueRange,
+        user.marketScope,
+        arcName,
+        result.level,
+        result.totalScore,
+        service?.name ?? result.recommendedServiceId ?? "",
+        JSON.stringify(result.layerScores ?? {}),
+        JSON.stringify(result.topBrechas ?? []),
+      ]),
+    ]);
+
+    if (brevoResult.status === "rejected") {
+      console.error("[rizoma] Brevo error:", brevoResult.reason);
     }
+    if (sheetsResult.status === "rejected") {
+      console.error("[rizoma] Google Sheets error:", sheetsResult.reason);
+    }
+
+    // Only fail the request if BOTH destinations failed — that's the one
+    // case where the lead would otherwise be silently lost. The results
+    // screen is already visible client-side, so we still send the email
+    // below on a best-effort basis regardless.
+    const leadPersisted =
+      brevoResult.status === "fulfilled" || sheetsResult.status === "fulfilled";
 
     // 2) Send follow-up email (non-blocking failure)
     try {
@@ -86,6 +118,16 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       console.error("[rizoma] email send error:", err);
+    }
+
+    if (!leadPersisted) {
+      return NextResponse.json(
+        {
+          error:
+            "No pudimos registrar tu diagnóstico. Intenta de nuevo en unos minutos.",
+        },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ ok: true });
